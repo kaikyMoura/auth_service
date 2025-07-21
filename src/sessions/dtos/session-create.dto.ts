@@ -11,11 +11,11 @@ export class SessionCreateDto {
 
     @IsOptional()
     @IsString({ message: 'IP address must be a string' })
-    ipAddress: string;
+    ipAddress?: string;
 
     @IsOptional()
     @IsString({ message: 'User agent must be a string' })
-    userAgent: string;
+    userAgent?: string;
 
     @IsNotEmpty({ message: 'Is active is required' })
     @IsBoolean({ message: 'Is active must be a boolean' })

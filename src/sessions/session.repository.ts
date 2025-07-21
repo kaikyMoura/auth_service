@@ -89,6 +89,12 @@ export class SessionRepository {
      * @param where - The unique identifier for the session to delete.
      * @returns The deleted session.
      */
+    /**
+     * Deletes a session based on the provided unique identifier.
+     *
+     * @param where - The unique identifier for the session to delete.
+     * @returns The deleted session.
+     */
     async delete(where: Prisma.SessionWhereUniqueInput): Promise<Session> {
         return this.prisma.session.delete({
             where,

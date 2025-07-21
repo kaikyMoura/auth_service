@@ -28,7 +28,7 @@ export class TokenService  {
      * @param expiresIn - The expiration time
      * @returns The signed token and expiration time
      */
-    async signToken(payload: JwtPayload, expiresIn?: string): Promise<{ token: string, expiresIn: string }> {
+    async signAccessToken(payload: JwtPayload, expiresIn?: string): Promise<{ token: string, expiresIn: string }> {
         const token = await this.jwtService.signAsync(payload, { expiresIn: expiresIn ?? this.configService.get('JWT_ACCESS_EXPIRES') });
 
         return {
@@ -43,7 +43,7 @@ export class TokenService  {
      * @param expiresIn - The expiration time
      * @returns The signed token and expiration time
      */
-    async signRefreshToken(payload: JwtPayload, expiresIn?: string): Promise<{ token: string, expiresIn: string }> {
+    async signRefreshToken(expiresIn?: string): Promise<{ token: string, expiresIn: string }> {
         const hashedToken = createHash('sha256').update(randomUUID()).digest('hex');
 
         return {

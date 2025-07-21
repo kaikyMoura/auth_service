@@ -1,4 +1,4 @@
-import { Injectable, LoggerService } from '@nestjs/common';
+import { Injectable, LoggerService, NotFoundException } from '@nestjs/common';
 import { SessionRepository } from './session.repository';
 import { SessionCreateDto } from './dtos/session-create.dto';
 import { Prisma, Session } from 'prisma/app/generated/prisma/client';
@@ -88,6 +88,25 @@ export class SessionService {
     }
 
     /**
+     * Finds a session by its refresh token.
+     * @param refreshToken - The refresh token to search for.
+     * @returns The found session or null if not found.
+     */
+    async findByRefreshToken(refreshToken: string): Promise<Session | null> {
+        try {
+            this.logger.log('Finding session by refresh token', 'SessionService.findByRefreshToken');
+            const session = await this.sessionRepository.findFirst(
+                { refreshToken: refreshToken }, { createdAt: 'desc' }
+            );
+            this.logger.log('Session found', 'SessionService.findByRefreshToken');
+            return session;
+        } catch (error) {
+            this.logger.error(error.message, error.stack, 'SessionService.findByRefreshToken');
+            throw error;
+        }
+    }
+
+    /**
      * Finds many sessions
      * @param where - The where clause to find the sessions
      * @param orderBy - The order by clause to order the sessions
@@ -159,6 +178,23 @@ export class SessionService {
             this.logger.error(error.message, error.stack, 'SessionService.delete');
             throw error;
         }
+    }
+
+    /**
+     * Deletes a session by refresh token
+     * @param refreshToken - The refresh token to delete the session
+     * @returns The deleted session
+     * @example
+     * await this.sessionService.deleteByRefreshToken('123');
+     */
+    async deleteByRefreshToken(refreshToken: string): Promise<void> {
+        const session = await this.findByRefreshToken(refreshToken);
+        if (!session) {
+            throw new NotFoundException('Session not found');
+        }
+        await this.delete({
+            id: session.id,
+        });
     }
 
     /**
