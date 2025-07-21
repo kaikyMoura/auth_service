@@ -1,0 +1,64 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "app/generated/prisma/client"
+  previewFeatures = ["fullTextSearchPostgres", "views", "multiSchema"]
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "audit"]
+}
+
+enum AuditAction {
+  INSERT
+  UPDATE
+  DELETE
+
+  @@schema("audit")
+}
+
+model AuditLog {
+  id        String  @id @default(uuid()) @db.Uuid
+  tableName String  @map("table_name") @db.VarChar(100)
+  recordId  String  @map("record_id") @db.Uuid
+  oldValues Json?   @map("old_values") @db.JsonB
+  newValues Json?   @map("new_values") @db.JsonB
+  userId    String? @map("user_id") @db.Uuid
+  ipAddress String? @map("ip_address") @db.Inet
+  userAgent String? @map("user_agent") @db.Text
+
+  action AuditAction @map("action")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tableName], name: "idx_auditlog_table_name")
+  @@index([recordId], name: "idx_auditlog_record_id")
+  @@index([action], name: "idx_auditlog_action")
+  @@index([userId], name: "idx_auditlog_user_id")
+  @@index([createdAt], name: "idx_auditlog_created_at")
+  @@map("audit_logs")
+  @@schema("audit")
+}
+
+model Session {
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @map("user_id") @db.Uuid
+  refreshToken String  @map("refresh_token") @db.Text
+  userAgent    String? @map("user_agent") @db.Text
+  ipAddress    String? @map("ip_address") @db.Inet
+  isActive     Boolean @default(true) @map("is_active")
+
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+
+  @@index([userId], name: "idx_usersession_user_id")
+  @@index([refreshToken], name: "idx_usersession_refresh_token")
+  @@index([expiresAt], name: "idx_usersession_expires_at")
+  @@index([isActive], name: "idx_usersession_is_active")
+  @@index([lastUsedAt], name: "idx_usersession_last_used_at")
+  @@map("user_sessions")
+  @@schema("audit")
+}
