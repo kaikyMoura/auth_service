@@ -1,5 +1,5 @@
-import { ResponseType } from "@/shared/types/response-type";
-import { RegisterUserResponse } from "@/users/types/register-user-response";
+import { ResponseType } from '@/shared/types/response-type';
+import { AuthTokens } from './auth-tokens';
 
 /**
  * Auth response
@@ -8,4 +8,4 @@ import { RegisterUserResponse } from "@/users/types/register-user-response";
  * const authResponse: AuthResponse = { success: true, message: 'User registered successfully', data: user };
  * ```
  */
-export type AuthResponse = ResponseType<RegisterUserResponse>
+export type AuthResponse = ResponseType<AuthTokens>;

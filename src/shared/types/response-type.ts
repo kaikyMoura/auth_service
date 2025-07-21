@@ -7,8 +7,8 @@
  * ```
  */
 export type ResponseType<T> = {
-    success: boolean;
-    message?: string;
-    data?: T;
-    error?: string;
-}
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
+};
