@@ -2,6 +2,13 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { Prisma, Session } from 'prisma/app/generated/prisma/client';
 
+/**
+ * Session repository
+ * @class SessionRepository
+ * @description Session repository for session management
+ * @example
+ * const sessionRepository = new SessionRepository(prisma);
+ */
 @Injectable()
 export class SessionRepository {
     constructor(private readonly prisma: PrismaService) {}

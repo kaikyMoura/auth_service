@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SessionModule } from './sessions/session.module';
-import { LoggerModule } from './loggers/logger.module';
+import { LoggerModule } from './shared/loggers/logger.module';
 
 @Module({
   imports: [AuthModule, PrismaModule, SessionModule, LoggerModule],

@@ -3,6 +3,13 @@ import { SessionRepository } from './session.repository';
 import { SessionCreateDto } from './dtos/session-create.dto';
 import { Prisma, Session } from 'prisma/app/generated/prisma/client';
 
+/**
+ * Session service
+ * @class SessionService
+ * @description Session service for session management
+ * @example
+ * const sessionService = new SessionService(sessionRepository, logger);
+ */
 @Injectable()
 export class SessionService {
     constructor(private readonly sessionRepository: SessionRepository, private readonly logger: LoggerService) {}
@@ -11,6 +18,12 @@ export class SessionService {
      * Creates a new session
      * @param session - The session to create
      * @returns The created session
+     * @example
+     * const session = await this.sessionService.create({
+     *     userId: '123',
+     *     refreshToken: '123',
+     *     isActive: true,
+     * });
      */
     async create(session: SessionCreateDto): Promise<Session> {
         try {
@@ -30,6 +43,10 @@ export class SessionService {
      * Finds a unique session
      * @param where - The where clause to find the session
      * @returns The found session
+     * @example
+     * const session = await this.sessionService.findUnique({
+     *     id: '123',
+     * });
      */
     async findUnique(where: Prisma.SessionWhereUniqueInput): Promise<Session | null> {
         try {
@@ -106,6 +123,12 @@ export class SessionService {
      * @param where - The where clause to update the session
      * @param data - The data to update the session
      * @returns The updated session
+     * @example
+     * await this.sessionService.update({
+     *     id: '123',
+     * }, {
+     *     isActive: false,
+     * });
      */
     async update(where: Prisma.SessionWhereUniqueInput, data: Prisma.SessionUpdateInput): Promise<void> {
         try {
@@ -122,6 +145,10 @@ export class SessionService {
      * Deletes a session
      * @param where - The where clause to delete the session
      * @returns The deleted session
+     * @example
+     * await this.sessionService.delete({
+     *     id: '123',
+     * });
      */
     async delete(where: Prisma.SessionWhereUniqueInput): Promise<void> {
         try {
@@ -138,6 +165,10 @@ export class SessionService {
      * Counts the number of sessions
      * @param where - The where clause to count the sessions
      * @returns The number of sessions
+     * @example
+     * const count = await this.sessionService.count({
+     *     isActive: true,
+     * });
      */
     async count(where: Prisma.SessionWhereInput): Promise<number> {
         try {
@@ -156,6 +187,12 @@ export class SessionService {
      * @param where - The where clause to aggregate the sessions
      * @param aggregate - The aggregate clause to aggregate the sessions
      * @returns The aggregated sessions
+     * @example
+     * const aggregate = await this.sessionService.aggregate({
+     *     isActive: true,
+     * }, {
+     *     _count: true,
+     * });
      */
     async aggregate(where: Prisma.SessionWhereInput, aggregate: Prisma.SessionAggregateArgs): Promise<ReturnType<typeof this.sessionRepository.aggregate>> {
         try {
@@ -173,6 +210,10 @@ export class SessionService {
      * Checks if a session exists
      * @param where - The where clause to check if the session exists
      * @returns True if the session exists, false otherwise
+     * @example
+     * const exists = await this.sessionService.exists({
+     *     id: '123',
+     * });
      */
     async exists(where: Prisma.SessionWhereInput): Promise<boolean> {
         try {
