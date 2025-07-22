@@ -1,7 +1,8 @@
-import { Injectable, LoggerService, NotFoundException } from '@nestjs/common';
-import { SessionRepository } from './session.repository';
-import { SessionCreateDto } from './dtos/session-create.dto';
+import { LoggerService } from '@/shared/loggers/logger.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Session } from 'prisma/app/generated/prisma/client';
+import { SessionCreateDto } from './dtos/session-create.dto';
+import { SessionRepository } from './session.repository';
 
 /**
  * Session service
@@ -29,17 +30,12 @@ export class SessionService {
    * });
    */
   async create(session: SessionCreateDto): Promise<Session> {
-    try {
-      this.logger.log('Creating session', 'SessionService.create');
-      const newSession = await this.sessionRepository.create({
-        ...session,
-      });
-      this.logger.log('Session created', 'SessionService.create');
-      return newSession;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.create');
-      throw error;
-    }
+    this.logger.log('Creating session', 'SessionService.create');
+    const newSession = await this.sessionRepository.create({
+      ...session,
+    });
+    this.logger.log('Session created', 'SessionService.create');
+    return newSession;
   }
 
   /**
@@ -54,19 +50,10 @@ export class SessionService {
   async findUnique(
     where: Prisma.SessionWhereUniqueInput,
   ): Promise<Session | null> {
-    try {
-      this.logger.log('Finding unique session', 'SessionService.findUnique');
-      const session = await this.sessionRepository.findUnique(where);
-      this.logger.log('Session found', 'SessionService.findUnique');
-      return session;
-    } catch (error) {
-      this.logger.error(
-        error.message,
-        error.stack,
-        'SessionService.findUnique',
-      );
-      throw error;
-    }
+    this.logger.log('Finding unique session', 'SessionService.findUnique');
+    const session = await this.sessionRepository.findUnique(where);
+    this.logger.log('Session found', 'SessionService.findUnique');
+    return session;
   }
 
   /**
@@ -88,15 +75,10 @@ export class SessionService {
     where: Prisma.SessionWhereInput,
     orderBy: Prisma.SessionOrderByWithRelationInput,
   ): Promise<Session | null> {
-    try {
-      this.logger.log('Finding first session', 'SessionService.findFirst');
-      const session = await this.sessionRepository.findFirst(where, orderBy);
-      this.logger.log('Session found', 'SessionService.findFirst');
-      return session;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.findFirst');
-      throw error;
-    }
+    this.logger.log('Finding first session', 'SessionService.findFirst');
+    const session = await this.sessionRepository.findFirst(where, orderBy);
+    this.logger.log('Session found', 'SessionService.findFirst');
+    return session;
   }
 
   /**
@@ -105,25 +87,16 @@ export class SessionService {
    * @returns The found session or null if not found.
    */
   async findByRefreshToken(refreshToken: string): Promise<Session | null> {
-    try {
-      this.logger.log(
-        'Finding session by refresh token',
-        'SessionService.findByRefreshToken',
-      );
-      const session = await this.sessionRepository.findFirst(
-        { refreshToken: refreshToken },
-        { createdAt: 'desc' },
-      );
-      this.logger.log('Session found', 'SessionService.findByRefreshToken');
-      return session;
-    } catch (error) {
-      this.logger.error(
-        error.message,
-        error.stack,
-        'SessionService.findByRefreshToken',
-      );
-      throw error;
-    }
+    this.logger.log(
+      'Finding session by refresh token',
+      'SessionService.findByRefreshToken',
+    );
+    const session = await this.sessionRepository.findFirst(
+      { refreshToken: refreshToken },
+      { createdAt: 'desc' },
+    );
+    this.logger.log('Session found', 'SessionService.findByRefreshToken');
+    return session;
   }
 
   /**
@@ -151,20 +124,15 @@ export class SessionService {
     take: number,
     skip: number,
   ): Promise<Session[]> {
-    try {
-      this.logger.log('Finding many sessions', 'SessionService.findMany');
-      const sessions = await this.sessionRepository.findMany(
-        where,
-        orderBy,
-        take,
-        skip,
-      );
-      this.logger.log('Sessions found', 'SessionService.findMany');
-      return sessions;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.findMany');
-      throw error;
-    }
+    this.logger.log('Finding many sessions', 'SessionService.findMany');
+    const sessions = await this.sessionRepository.findMany(
+      where,
+      orderBy,
+      take,
+      skip,
+    );
+    this.logger.log('Sessions found', 'SessionService.findMany');
+    return sessions;
   }
 
   /**
@@ -183,14 +151,9 @@ export class SessionService {
     where: Prisma.SessionWhereUniqueInput,
     data: Prisma.SessionUpdateInput,
   ): Promise<void> {
-    try {
-      this.logger.log('Updating session', 'SessionService.update');
-      await this.sessionRepository.update(where, data);
-      this.logger.log('Session updated', 'SessionService.update');
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.update');
-      throw error;
-    }
+    this.logger.log('Updating session', 'SessionService.update');
+    await this.sessionRepository.update(where, data);
+    this.logger.log('Session updated', 'SessionService.update');
   }
 
   /**
@@ -203,14 +166,9 @@ export class SessionService {
    * });
    */
   async delete(where: Prisma.SessionWhereUniqueInput): Promise<void> {
-    try {
-      this.logger.log('Deleting session', 'SessionService.delete');
-      await this.sessionRepository.delete(where);
-      this.logger.log('Session deleted', 'SessionService.delete');
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.delete');
-      throw error;
-    }
+    this.logger.log('Deleting session', 'SessionService.delete');
+    await this.sessionRepository.delete(where);
+    this.logger.log('Session deleted', 'SessionService.delete');
   }
 
   /**
@@ -218,20 +176,37 @@ export class SessionService {
    * @param userId - The ID of the user whose expired sessions should be deleted.
    * @returns A promise that resolves when the operation is complete.
    */
-  async deleteExpiredSessions(userId: string): Promise<void> {
-    try {
-      this.logger.log('Deleting expired sessions', 'SessionService.deleteExpiredSessions');
-      await this.sessionRepository.deleteMany({
-        userId: userId,
-        expiresAt: {
-          lte: new Date(),
-        },
-      });
-      this.logger.log('Expired sessions deleted', 'SessionService.deleteExpiredSessions');
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.deleteExpiredSessions');
-      throw error;
-    }
+  async deleteExpiredSessionsByUserId(userId: string): Promise<void> {
+    this.logger.log(
+      'Deleting expired sessions',
+      'SessionService.deleteExpiredSessions',
+    );
+    await this.sessionRepository.deleteMany({
+      userId: userId,
+      expiresAt: {
+        lte: new Date(),
+      },
+    });
+    this.logger.log(
+      'Expired sessions deleted',
+      'SessionService.deleteExpiredSessions',
+    );
+  }
+
+  async deleteExpiredSessions(): Promise<void> {
+    this.logger.log(
+      'Deleting expired sessions',
+      'SessionService.deleteExpiredSessions',
+    );
+    await this.sessionRepository.deleteMany({
+      expiresAt: {
+        lte: new Date(),
+      },
+    });
+    this.logger.log(
+      'Expired sessions deleted',
+      'SessionService.deleteExpiredSessions',
+    );
   }
 
   /**
@@ -261,15 +236,10 @@ export class SessionService {
    * });
    */
   async count(where: Prisma.SessionWhereInput): Promise<number> {
-    try {
-      this.logger.log('Counting sessions', 'SessionService.count');
-      const count = await this.sessionRepository.count(where);
-      this.logger.log('Sessions counted', 'SessionService.count');
-      return count;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.count');
-      throw error;
-    }
+    this.logger.log('Counting sessions', 'SessionService.count');
+    const count = await this.sessionRepository.count(where);
+    this.logger.log('Sessions counted', 'SessionService.count');
+    return count;
   }
 
   /**
@@ -288,18 +258,13 @@ export class SessionService {
     where: Prisma.SessionWhereInput,
     aggregate: Prisma.SessionAggregateArgs,
   ): Promise<ReturnType<typeof this.sessionRepository.aggregate>> {
-    try {
-      this.logger.log('Aggregating sessions', 'SessionService.aggregate');
-      const aggregateResult = await this.sessionRepository.aggregate(
-        where,
-        aggregate,
-      );
-      this.logger.log('Sessions aggregated', 'SessionService.aggregate');
-      return aggregateResult;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.aggregate');
-      throw error;
-    }
+    this.logger.log('Aggregating sessions', 'SessionService.aggregate');
+    const aggregateResult = await this.sessionRepository.aggregate(
+      where,
+      aggregate,
+    );
+    this.logger.log('Sessions aggregated', 'SessionService.aggregate');
+    return aggregateResult;
   }
 
   /**
@@ -312,14 +277,9 @@ export class SessionService {
    * });
    */
   async exists(where: Prisma.SessionWhereInput): Promise<boolean> {
-    try {
-      this.logger.log('Checking if session exists', 'SessionService.exists');
-      const exists = await this.sessionRepository.exists(where);
-      this.logger.log('Session exists', 'SessionService.exists');
-      return exists;
-    } catch (error) {
-      this.logger.error(error.message, error.stack, 'SessionService.exists');
-      throw error;
-    }
+    this.logger.log('Checking if session exists', 'SessionService.exists');
+    const exists = await this.sessionRepository.exists(where);
+    this.logger.log('Session exists', 'SessionService.exists');
+    return exists;
   }
 }

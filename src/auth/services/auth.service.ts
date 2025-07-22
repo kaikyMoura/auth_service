@@ -1,6 +1,6 @@
 import { SessionService } from '@/sessions/session.service';
-import { LoginUserDto } from '@/users/dtos/login-user.dto';
-import { RegisterUserDto } from '@/users/dtos/register-user.dto';
+import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
+import { RegisterUserDto } from '@/users-client/dtos/register-user.dto';
 import { UsersService } from '@/users/users.service';
 import {
   BadRequestException,
@@ -13,7 +13,7 @@ import {
 import { AuthTokens } from '../types/auth-tokens';
 import { TokenService } from './token.service';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@/users/types/user';
+import { User } from '@/users-client/types/user';
 
 /**
  * Auth service
@@ -166,6 +166,12 @@ export class AuthService {
     await this.sessionService.deleteByRefreshToken(refreshToken);
   }
 
+  /**
+   * Refresh token
+   * @param refreshToken - The refresh token of the user
+   * @returns The refreshed token
+   * @throws {UnauthorizedException} - If the session is invalid or expired
+   */
   async refreshToken(refreshToken: string): Promise<AuthTokens> {
     const payload = await this.tokenService.verifyToken(refreshToken);
     const session = await this.sessionService.findUnique({

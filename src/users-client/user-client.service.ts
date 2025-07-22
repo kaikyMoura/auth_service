@@ -1,18 +1,20 @@
 import { LoggerService } from '@/shared/loggers/logger.service';
 import { HttpService } from '@nestjs/axios';
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { async, firstValueFrom } from 'rxjs';
+import { Cache } from 'cache-manager';
+import { firstValueFrom } from 'rxjs';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { User } from './types/user';
 
 @Injectable()
-export class UsersService {
+export class UserClientService {
   private readonly baseUrl: string;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
+    private readonly cacheManager: Cache,
   ) {
     this.baseUrl =
       this.configService.get('USERS_SERVICE_URL') ?? 'http://localhost:3000';
@@ -25,15 +27,13 @@ export class UsersService {
    * @throws {HttpException} - If the user creation fails
    */
   async createUser(user: RegisterUserDto): Promise<User> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.baseUrl}/users`, user),
-      );
-      return response.data;
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    this.logger.log(`Creating user ${user.email}`);
+    const response = await firstValueFrom(
+      this.httpService.post(`${this.baseUrl}/users`, user),
+    );
+
+    this.logger.log(`User created ${JSON.stringify(response.data)}`);
+    return response.data as User;
   }
 
   /**
@@ -43,15 +43,15 @@ export class UsersService {
    * @throws {HttpException} - If the user is not found
    */
   async findUserByEmail(email: string): Promise<User> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/users/email/${email}`),
-      );
-      return response.data;
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    this.logger.log(`Finding user by email ${email}`);
+    const response = await firstValueFrom(
+      this.httpService.get(
+        `${this.baseUrl}/users/email/${encodeURIComponent(email)}`,
+      ),
+    );
+
+    this.logger.log(`User found ${JSON.stringify(response.data)}`);
+    return response.data as User;
   }
 
   /**
@@ -61,15 +61,13 @@ export class UsersService {
    * @throws {HttpException} - If the user is not found
    */
   async findUserById(id: string): Promise<User> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/users/${id}`),
-      );
-      return response.data;
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    this.logger.log(`Finding user by id ${id}`);
+    const response = await firstValueFrom(
+      this.httpService.get(`${this.baseUrl}/users/${id}`),
+    );
+
+    this.logger.log(`User found ${JSON.stringify(response.data)}`);
+    return response.data as User;
   }
 
   /**
@@ -79,12 +77,11 @@ export class UsersService {
    * @throws {HttpException} - If the user is not found
    */
   async forgotPassword(email: string): Promise<void> {
-    try {
-      await firstValueFrom(this.httpService.post(`${this.baseUrl}/users/forgot-password`, { email }));
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    await firstValueFrom(
+      this.httpService.post(`${this.baseUrl}/users/forgot-password`, {
+        email,
+      }),
+    );
   }
 
   /**
@@ -95,33 +92,37 @@ export class UsersService {
    * @throws {HttpException} - If the user is not found
    */
   async resetPassword(email: string, password: string): Promise<void> {
-    try {
-      await firstValueFrom(this.httpService.post(`${this.baseUrl}/users/reset-password`, { email, password }));
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    await firstValueFrom(
+      this.httpService.post(`${this.baseUrl}/users/reset-password`, {
+        email,
+        password,
+      }),
+    );
   }
 
   /**
    * Validate credentials
    * @param email - The email of the user
    * @param password - The password of the user
-   * @returns The user
+   * @returns The a message of success or error
    * @throws {HttpException} - If the user is not found
    */
   async validateCredentials(email: string, password: string): Promise<string> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.baseUrl}/users/validate-credentials`, {
-          email,
-          password,
-        }),
-      );
-      return response.data;
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(error.response.data, error.response.status);
-    }
+    const response = await firstValueFrom(
+      this.httpService.post(`${this.baseUrl}/users/validate-credentials`, {
+        email,
+        password,
+      }),
+    );
+    return response.data as string;
+  }
+
+  /**
+   * Get a user from the cache
+   * @param id - The id of the user
+   * @returns The user
+   */
+  async getUserCache(id: string): Promise<User | undefined> {
+    return await this.cacheManager.get<User>(`user:${id}`);
   }
 }
