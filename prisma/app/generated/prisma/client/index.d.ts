@@ -31,7 +31,9 @@ export namespace $Enums {
   export const AuditAction: {
   INSERT: 'INSERT',
   UPDATE: 'UPDATE',
-  DELETE: 'DELETE'
+  DELETE: 'DELETE',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT'
 };
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
@@ -3291,7 +3293,7 @@ export namespace Prisma {
     NOT?: AuditLogWhereInput | AuditLogWhereInput[]
     id?: UuidFilter<"AuditLog"> | string
     tableName?: StringFilter<"AuditLog"> | string
-    recordId?: UuidFilter<"AuditLog"> | string
+    recordId?: StringFilter<"AuditLog"> | string
     oldValues?: JsonNullableFilter<"AuditLog">
     newValues?: JsonNullableFilter<"AuditLog">
     userId?: UuidNullableFilter<"AuditLog"> | string | null
@@ -3321,7 +3323,7 @@ export namespace Prisma {
     OR?: AuditLogWhereInput[]
     NOT?: AuditLogWhereInput | AuditLogWhereInput[]
     tableName?: StringFilter<"AuditLog"> | string
-    recordId?: UuidFilter<"AuditLog"> | string
+    recordId?: StringFilter<"AuditLog"> | string
     oldValues?: JsonNullableFilter<"AuditLog">
     newValues?: JsonNullableFilter<"AuditLog">
     userId?: UuidNullableFilter<"AuditLog"> | string | null
@@ -3353,7 +3355,7 @@ export namespace Prisma {
     NOT?: AuditLogScalarWhereWithAggregatesInput | AuditLogScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"AuditLog"> | string
     tableName?: StringWithAggregatesFilter<"AuditLog"> | string
-    recordId?: UuidWithAggregatesFilter<"AuditLog"> | string
+    recordId?: StringWithAggregatesFilter<"AuditLog"> | string
     oldValues?: JsonNullableWithAggregatesFilter<"AuditLog">
     newValues?: JsonNullableWithAggregatesFilter<"AuditLog">
     userId?: UuidNullableWithAggregatesFilter<"AuditLog"> | string | null

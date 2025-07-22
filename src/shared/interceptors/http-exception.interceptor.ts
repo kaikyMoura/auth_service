@@ -4,11 +4,15 @@ import {
   ExecutionContext,
   HttpException,
   Injectable,
+  InternalServerErrorException,
   NestInterceptor,
 } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { catchError, Observable, throwError } from 'rxjs';
 
+/**
+ * Interceptor to handle HTTP exceptions.
+ */
 @Injectable()
 export class HttpExceptionInterceptor implements NestInterceptor {
   constructor(private readonly logger: LoggerService) {}
@@ -22,7 +26,10 @@ export class HttpExceptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const contextName = context.getClass().name;
 
-    this.logger.log('Intercepting request...', contextName);
+    this.logger.log(
+      '🔄 HttpExceptionInterceptor initialized',
+      'HttpExceptionInterceptor.intercept',
+    );
 
     return next.handle().pipe(
       catchError((error: unknown) => {
@@ -30,7 +37,10 @@ export class HttpExceptionInterceptor implements NestInterceptor {
           error instanceof Error ? error.message : 'Unknown error';
 
         if (error instanceof HttpException) {
-          this.logger.warn(`[${contextName}] HttpException: ${errorMessage}`);
+          this.logger.error(
+            `[${contextName}] HttpException: ${errorMessage}`,
+            'HttpExceptionInterceptor.intercept',
+          );
           return throwError(
             () => new HttpException(errorMessage, error.getStatus()),
           );
@@ -51,7 +61,7 @@ export class HttpExceptionInterceptor implements NestInterceptor {
           `[${contextName}] Unhandled error: ${errorMessage}`,
           (error as { stack: string }).stack,
         );
-        return throwError(() => new HttpException(errorMessage, 500));
+        return throwError(() => new InternalServerErrorException(errorMessage));
       }),
     );
   }

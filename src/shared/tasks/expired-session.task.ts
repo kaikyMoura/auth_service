@@ -10,11 +10,11 @@ export class ExpiredSessionTask {
     private readonly logger: LoggerService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
   /**
    * Deletes expired sessions
    * @description This task is used to delete expired sessions
    */
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async handleExpiredSession() {
     this.logger.log(
       '🔄 Scheduled expired sessions deletion',

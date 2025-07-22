@@ -14,6 +14,8 @@ enum AuditAction {
   INSERT
   UPDATE
   DELETE
+  LOGIN
+  LOGOUT
 
   @@schema("audit")
 }
@@ -21,7 +23,7 @@ enum AuditAction {
 model AuditLog {
   id String @id @default(uuid()) @db.Uuid
   tableName String @map("table_name") @db.VarChar(100)
-  recordId String @map("record_id") @db.Uuid
+  recordId String @map("record_id") @db.VarChar(100)
   oldValues Json? @map("old_values") @db.JsonB
   newValues Json? @map("new_values") @db.JsonB
   userId String? @map("user_id") @db.Uuid

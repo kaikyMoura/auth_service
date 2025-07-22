@@ -191,7 +191,9 @@ exports.Prisma.SessionOrderByRelevanceFieldEnum = {
 exports.AuditAction = exports.$Enums.AuditAction = {
   INSERT: 'INSERT',
   UPDATE: 'UPDATE',
-  DELETE: 'DELETE'
+  DELETE: 'DELETE',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT'
 };
 
 exports.Prisma.ModelName = {
