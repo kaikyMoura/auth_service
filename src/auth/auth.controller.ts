@@ -1,15 +1,21 @@
+import { CurrentRefreshToken } from '@/shared/decorators/current-refresh-token.decorator';
+import { Public } from '@/shared/decorators/public.decorator';
+import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
 import { RegisterUserDto } from '@/users-client/dtos/register-user.dto';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtGuard } from './guards/jwt.guard';
 import { AuthService } from './services/auth.service';
 import { AuthResponse } from './types/auth-response';
-import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
+@UseGuards(JwtGuard, ThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
@@ -29,14 +35,13 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Login a user' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 400, description: 'Invalid credentials' })
   @ApiBody({ type: LoginUserDto, description: 'User login body' })
-  async login(
-    @Body() loginUserDto: LoginUserDto,
-  ): Promise<AuthResponse> {
+  async login(@Body() loginUserDto: LoginUserDto): Promise<AuthResponse> {
     const response = await this.authService.login(loginUserDto);
     return {
       success: true,
@@ -49,8 +54,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout a user' })
   @ApiResponse({ status: 200, description: 'User logged out successfully' })
   @ApiResponse({ status: 400, description: 'Invalid refresh token' })
-  async logout(@Body() refreshToken: string): Promise<AuthResponse> {
+  async logout(
+    @CurrentRefreshToken() refreshToken: string,
+  ): Promise<AuthResponse> {
     await this.authService.logout(refreshToken);
+
     return {
       success: true,
       message: 'User logged out successfully',
@@ -59,10 +67,16 @@ export class AuthController {
 
   @Post('refresh-token')
   @ApiOperation({ summary: 'Refresh a user token' })
-  @ApiResponse({ status: 200, description: 'User token refreshed successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User token refreshed successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid refresh token' })
-  async refreshToken(@Body() refreshToken: string): Promise<AuthResponse> {
+  async refreshToken(
+    @CurrentRefreshToken() refreshToken: string,
+  ): Promise<AuthResponse> {
     const response = await this.authService.refreshToken(refreshToken);
+
     return {
       success: true,
       message: 'User token refreshed successfully',

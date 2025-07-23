@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/shared/prisma/prisma.service';
 import { SessionService } from '@/sessions/session.service';
 import { LoggerService } from '@/shared/loggers/logger.service';
 import { UsersService } from '@/users/users.service';

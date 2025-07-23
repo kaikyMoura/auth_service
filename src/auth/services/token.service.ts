@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService as JwtServiceNest } from '@nestjs/jwt';
-import { JwtPayload } from '../dtos/jwt-payload.dto';
 import { ConfigService } from '@nestjs/config';
+import { JwtService as JwtServiceNest } from '@nestjs/jwt';
 import { createHash, randomUUID } from 'crypto';
+import { JwtPayload } from '../dtos/jwt-payload.dto';
 
 /**
  * Token service
@@ -19,9 +19,6 @@ export class TokenService {
   ) {
     if (!this.configService.get('JWT_SECRET_KEY')) {
       throw new Error('JWT_SECRET is not set');
-    }
-    if (!this.configService.get('JWT_REFRESH_SECRET')) {
-      throw new Error('JWT_REFRESH_SECRET is not set');
     }
   }
 
@@ -56,10 +53,10 @@ export class TokenService {
   ): Promise<{ token: string; expiresIn: string }> {
     const hashedToken = createHash('sha256').update(randomUUID()).digest('hex');
 
-    return {
+    return Promise.resolve({
       token: hashedToken,
       expiresIn: expiresIn ?? this.configService.get('JWT_REFRESH_EXPIRES')!,
-    };
+    });
   }
 
   /**

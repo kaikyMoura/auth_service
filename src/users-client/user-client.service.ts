@@ -1,20 +1,25 @@
 import { LoggerService } from '@/shared/loggers/logger.service';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { User } from './types/user';
 
+/**
+ * User client service
+ * @description This service is used to interact with the users service
+ */
 @Injectable()
 export class UserClientService {
   private readonly baseUrl: string;
+
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
-    private readonly cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     this.baseUrl =
       this.configService.get('USERS_SERVICE_URL') ?? 'http://localhost:3000';
@@ -123,6 +128,33 @@ export class UserClientService {
    * @returns The user
    */
   async getUserCache(id: string): Promise<User | undefined> {
-    return await this.cacheManager.get<User>(`user:${id}`);
+    return await this.cacheManager.get<User & { refreshToken?: string }>(
+      `user:${id}`,
+    );
+  }
+
+  /**
+   * Set a user in the cache
+   * @param id - The id of the user
+   * @param user - The user
+   * @param refreshToken - The refresh token of the user
+   * @param ttl - The time to live in seconds
+   */
+  async setUserCache(
+    id: string,
+    user: User,
+    refreshToken?: string,
+    ttl?: number,
+  ): Promise<void> {
+    const cachedData = { ...user, refreshToken };
+    await this.cacheManager.set(`user:${id}`, cachedData, ttl ?? 60 * 60 * 24);
+  }
+
+  /**
+   * Invalidate a user from the cache
+   * @param id - The id of the user
+   */
+  async invalidateUserCache(id: string): Promise<void> {
+    await this.cacheManager.del(`user:${id}`);
   }
 }

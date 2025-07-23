@@ -2,7 +2,6 @@ import { UserClientService } from '@/users-client/user-client.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Cache } from 'cache-manager';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtPayload } from '../dtos/jwt-payload.dto';
 
@@ -10,7 +9,6 @@ import { JwtPayload } from '../dtos/jwt-payload.dto';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
-    private readonly cacheManager: Cache,
     private readonly userClientService: UserClientService,
   ) {
     const jwtSecret = configService.get<string>('JWT_SECRET_KEY');
@@ -33,9 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @throws {UnauthorizedException} - If the user is not found
    */
   async validate(payload: JwtPayload) {
-    const cachedToken = await this.cacheManager.get<JwtPayload>(
-      `user:${payload.sub}`,
-    );
+    const cachedToken = await this.userClientService.getUserCache(payload.sub);
 
     if (cachedToken) {
       return cachedToken;
@@ -48,7 +44,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const ttl = this.configService.get<number>('JWT_REFRESH_EXPIRES') ?? 3600;
-    await this.cacheManager.set(`user:${payload.sub}`, user, ttl);
+    await this.userClientService.setUserCache(
+      payload.sub,
+      user,
+      undefined,
+      ttl,
+    );
     return user;
   }
 }

@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { CustomRequest } from '../interfaces/custom-request';
-import { LoggerService } from '../loggers/logger.service';
+import { CustomRequest } from '../../shared/interfaces/custom-request';
+import { LoggerService } from '../../shared/loggers/logger.service';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -24,7 +24,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       );
 
       this.logger.warn(
-        `Rate limit exceeded for the ip ${ip} on method ${method} ${url} and path ${route?.path}`,
+        `Rate limit exceeded for the ip ${ip} on method ${method as string} ${url as string} and path ${route?.path}`,
         'CustomThrottlerGuard.canActivate',
       );
     }

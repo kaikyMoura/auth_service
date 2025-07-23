@@ -17,4 +17,5 @@ export const jwtModuleOptions: JwtModuleAsyncOptions = {
       signOptions: { expiresIn: jwtConfig?.accessExpiresIn },
     };
   },
+  inject: [ConfigService],
 };

@@ -39,4 +39,8 @@ export const envSchema = Joi.object({
   REDIS_MAX_ITEMS: Joi.number()
     .default(100)
     .description('Maximum number of items stored in Redis cache'),
+  THROTTLER_TTL: Joi.number()
+    .default(60)
+    .description('Throttler TTL in seconds'),
+  THROTTLER_LIMIT: Joi.number().default(10).description('Throttler limit'),
 });

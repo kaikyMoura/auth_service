@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/shared/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { AuditLog } from 'prisma/app/generated/prisma/client';
 

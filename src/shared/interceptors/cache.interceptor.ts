@@ -1,4 +1,4 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   CallHandler,
   ExecutionContext,
@@ -7,7 +7,6 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cache } from 'cache-manager';
 import { Observable, asapScheduler, from, scheduled } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { LoggerService } from '../loggers/logger.service';
@@ -20,7 +19,7 @@ export class CacheInterceptor implements NestInterceptor {
   private readonly ttl: number;
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private configService: ConfigService,
     private logger: LoggerService,
   ) {

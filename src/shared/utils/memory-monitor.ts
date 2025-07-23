@@ -49,13 +49,20 @@ export class MemoryMonitor {
    * memoryMonitor.logMemoryUsageWithContext('CUSTOM_CONTEXT');
    * ```
    */
-  logMemoryUsageWithContext(context: string): void {
+  logMemoryUsageWithContext(
+    context: string,
+    options?: { detailed?: boolean },
+  ): void {
     const memUsage = process.memoryUsage();
     const used = Math.round(memUsage.heapUsed / 1024 / 1024); // MB
     const total = Math.round(memUsage.heapTotal / 1024 / 1024); // MB
     const percentage = Math.round((used / total) * 100);
 
     const message = `[${context}] Memory: ${used}MB/${total}MB (${percentage}%)`;
+
+    if (options?.detailed) {
+      this.logDetailedMemoryInfo();
+    }
 
     if (percentage >= this.criticalThreshold) {
       this.logger.error(
