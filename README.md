@@ -8,11 +8,11 @@
 
 <div align="center">
 
-![GitHub top language](https://img.shields.io/github/languages/top/kaikyMoura/auth-service)
-![Repository size](https://img.shields.io/github/repo-size/kaikyMoura/auth-service)
-![Github last commit](https://img.shields.io/github/last-commit/kaikyMoura/auth-service)
+![GitHub top language](https://img.shields.io/github/languages/top/kaikyMoura/auth_service)
+![Repository size](https://img.shields.io/github/repo-size/kaikyMoura/auth_service)
+![Github last commit](https://img.shields.io/github/last-commit/kaikyMoura/auth_service)
 ![License](https://img.shields.io/badge/license-UNLICENSED-blue)
-![Languages count](https://img.shields.io/github/languages/count/kaikyMoura/auth-service)
+![Languages count](https://img.shields.io/github/languages/count/kaikyMoura/auth_service)
 
 </div>
 
