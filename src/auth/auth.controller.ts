@@ -2,9 +2,10 @@ import { CurrentRefreshToken } from '@/shared/decorators/current-refresh-token.d
 import { Public } from '@/shared/decorators/public.decorator';
 import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
 import { RegisterUserDto } from '@/users-client/dtos/register-user.dto';
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Request } from 'express';
 import { JwtGuard } from './guards/jwt.guard';
 import { AuthService } from './services/auth.service';
 import { AuthResponse } from './types/auth-response';
@@ -41,8 +42,17 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 400, description: 'Invalid credentials' })
   @ApiBody({ type: LoginUserDto, description: 'User login body' })
-  async login(@Body() loginUserDto: LoginUserDto): Promise<AuthResponse> {
-    const response = await this.authService.login(loginUserDto);
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Req() req: Request,
+  ): Promise<AuthResponse> {
+    const { ipAddress, userAgent } = this.authService.extractClientInfo(req);
+
+    const response = await this.authService.login(
+      loginUserDto,
+      ipAddress,
+      userAgent,
+    );
     return {
       success: true,
       message: 'User logged in successfully',
@@ -80,6 +90,79 @@ export class AuthController {
     return {
       success: true,
       message: 'User token refreshed successfully',
+      data: response,
+    };
+  }
+
+  @Public()
+  @Post('google/login')
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiResponse({ status: 200, description: 'User logged in with Google' })
+  @ApiResponse({ status: 400, description: 'Invalid Google token' })
+  async googleLogin(
+    @Body('token') token: string,
+    @Req() req: Request,
+  ): Promise<AuthResponse> {
+    const { ipAddress, userAgent } = this.authService.extractClientInfo(req);
+
+    const response = await this.authService.googleLogin(
+      token,
+      ipAddress,
+      userAgent,
+    );
+
+    return {
+      success: true,
+      message: 'User logged in with Google',
+      data: response,
+    };
+  }
+
+  @Public()
+  @Post('google/signup')
+  @ApiOperation({ summary: 'Signup with Google' })
+  @ApiResponse({ status: 200, description: 'User signed up with Google' })
+  @ApiResponse({ status: 400, description: 'Invalid Google token' })
+  async googleSignup(
+    @Body('token') token: string,
+    @Req() req: Request,
+    @Body('password') password?: string,
+  ): Promise<AuthResponse> {
+    const { ipAddress, userAgent } = this.authService.extractClientInfo(req);
+
+    const response = await this.authService.googleSignup(
+      token,
+      password,
+      ipAddress,
+      userAgent,
+    );
+
+    // If the user profile is not complete, redirect to the complete profile page
+    if ('redirectToCompleteProfile' in response) {
+      return {
+        success: true,
+        message: 'User signed up with Google. Redirecting to complete profile',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'User signed up with Google',
+      data: response,
+    };
+  }
+
+  @Public()
+  @Post('google/callback')
+  @ApiOperation({ summary: 'Callback for Google login' })
+  @ApiResponse({ status: 200, description: 'Google login callback' })
+  @ApiResponse({ status: 400, description: 'Invalid Google token' })
+  async googleCallback(@Body() token: string): Promise<AuthResponse> {
+    const response = await this.authService.googleCallback(token);
+
+    return {
+      success: true,
+      message: 'Google login callback',
       data: response,
     };
   }

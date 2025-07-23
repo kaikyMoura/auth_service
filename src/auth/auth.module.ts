@@ -1,3 +1,4 @@
+import { GoogleModule } from '@/google/google.module';
 import { SessionModule } from '@/sessions/session.module';
 import { jwtModuleOptions } from '@/shared/configs/jwt-options.config';
 import { LoggerModule } from '@/shared/loggers/logger.module';
@@ -17,6 +18,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     SessionModule,
     LoggerModule,
     JwtModule.registerAsync(jwtModuleOptions),
+    GoogleModule,
   ],
   providers: [AuthService, TokenService, JwtStrategy],
   controllers: [AuthController],

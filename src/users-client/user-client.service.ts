@@ -127,7 +127,18 @@ export class UserClientService {
    * @param id - The id of the user
    * @returns The user
    */
-  async getUserCache(id: string): Promise<User | undefined> {
+  async getUserCacheByEmail(email: string): Promise<User | undefined> {
+    return await this.cacheManager.get<User & { refreshToken?: string }>(
+      `user:${email}`,
+    );
+  }
+
+  /**
+   * Get a user from the cache by id
+   * @param id - The id of the user
+   * @returns The user
+   */
+  async getUserCacheById(id: string): Promise<User | undefined> {
     return await this.cacheManager.get<User & { refreshToken?: string }>(
       `user:${id}`,
     );

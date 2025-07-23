@@ -18,6 +18,7 @@ import { PrismaModule } from './shared/prisma/prisma.module';
 import { envSchema } from './shared/schemas/env.schema';
 import { SharedModule } from './shared/shared.module';
 import { UserClientModule } from './users-client/user-client.module';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { UserClientModule } from './users-client/user-client.module';
     LoggerModule,
     UserClientModule,
     SharedModule,
+    GoogleModule,
   ],
   controllers: [AppController],
   providers: [

@@ -122,4 +122,12 @@ export class RegisterUserDto {
     example: '1234567890',
   })
   verificationToken?: string;
+
+  @IsString({ message: 'Provider must be a string' })
+  @IsOptional()
+  @ApiProperty({
+    description: 'The provider of the user',
+    example: 'google',
+  })
+  provider?: string;
 }

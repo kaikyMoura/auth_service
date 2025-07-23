@@ -1,3 +1,4 @@
+import { GoogleAuthService } from '@/google/auth/google-auth.service';
 import { SessionService } from '@/sessions/session.service';
 import { LoggerService } from '@/shared/loggers/logger.service';
 import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
@@ -12,6 +13,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 import { AuthTokens } from '../types/auth-tokens';
 import { TokenService } from './token.service';
 
@@ -35,6 +37,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly usersService: UserClientService,
     private readonly logger: LoggerService,
+    private readonly googleAuthService: GoogleAuthService,
     private readonly sessionService: SessionService,
     private readonly configService: ConfigService,
   ) {}
@@ -84,7 +87,7 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const cachedUser = await this.usersService.getUserCache(user.id);
+    const cachedUser = await this.usersService.getUserCacheById(user.id);
     if (cachedUser) {
       user = { ...user, ...cachedUser };
     } else {
@@ -119,6 +122,187 @@ export class AuthService {
       refreshToken: refreshToken.token,
       expiresIn: Number(refreshToken.expiresIn),
     };
+  }
+
+  /**
+   * Google login
+   * @param token - The token to login
+   * @param ipAddress - The ip address of the user
+   * @param userAgent - The user agent of the user
+   * @returns The tokens
+   */
+  async googleLogin(
+    token: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
+    const payload = await this.googleAuthService.verifyToken(token);
+
+    this.logger.log(`Google login payload: ${JSON.stringify(payload)}`);
+
+    let user = await this.usersService.getUserCacheByEmail(payload.email!);
+    if (!user) {
+      user = await this.usersService.findUserByEmail(payload.email!);
+      this.logger.error(
+        `No account found with this email: ${payload.email}`,
+        'AuthService.googleLogin',
+      );
+      throw new UnauthorizedException(
+        'No account found with this email. Please register first.',
+      );
+    }
+
+    if (!user.isActive) {
+      this.logger.error(
+        `Inactive user: ${payload.email}`,
+        'AuthService.googleLogin',
+      );
+      throw new BadRequestException('Your account is not active.');
+    }
+
+    this.logger.log(`User found: ${user.email}`);
+    const session = await this.sessionService.create({
+      userId: user.id,
+      refreshToken: '',
+      isActive: true,
+      ipAddress: ipAddress ?? undefined,
+      userAgent: userAgent ?? undefined,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    this.logger.log(`Session created: ${session.id}`);
+    const tokens = await this.generateTokens(user, session.id);
+
+    this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
+    await this.usersService.setUserCache(user.id, user, tokens.refreshToken);
+
+    this.logger.log(`Session updated: ${session.id}`);
+    await this.sessionService.update(
+      { id: session.id },
+      { refreshToken: tokens.refreshToken },
+    );
+
+    this.logger.log(`Session updated: ${session.id}`);
+    return tokens;
+  }
+
+  /**
+   * Google callback
+   * @param token - The token to callback
+   * @returns The tokens
+   */
+  async googleCallback(token: string): Promise<AuthTokens> {
+    const payload = await this.googleAuthService.verifyToken(token);
+    const user = await this.usersService.findUserByEmail(payload.email!);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const session = await this.sessionService.findUnique({
+      userId: user.id,
+      id: undefined,
+    });
+
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+
+    const tokens = await this.generateTokens(user, session.id);
+
+    return tokens;
+  }
+
+  /**
+   * Google signup
+   * @param token - The token to signup
+   * @returns The tokens
+   */
+  async googleSignup(
+    token: string,
+    password?: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens | { redirectToCompleteProfile: boolean }> {
+    this.logger.log(
+      `Google signup with token: ${token}`,
+      'AuthService.googleSignup',
+    );
+    const payload = await this.googleAuthService.verifyToken(token);
+    const email = payload?.email;
+    if (!email) {
+      this.logger.error('Invalid Google token', 'AuthService.googleSignup');
+      throw new BadRequestException('Invalid Google token');
+    }
+
+    let user = await this.usersService.getUserCacheByEmail(email);
+    if (!user) {
+      this.logger.log(
+        `No user found in cache for email: ${email}`,
+        'AuthService.googleSignup',
+      );
+      user = await this.usersService.findUserByEmail(email);
+
+      if (user) {
+        this.logger.error(
+          `User already exists for email: ${email}`,
+          'AuthService.googleSignup',
+        );
+        throw new UnauthorizedException(
+          'This email is already in use. Try to login instead.',
+        );
+      }
+
+      if (!password) {
+        this.logger.log(
+          `No password provided, redirecting to complete profile`,
+          'AuthService.googleSignup',
+        );
+        return { redirectToCompleteProfile: true };
+      }
+
+      user = await this.usersService.createUser({
+        email,
+        password,
+        firstName: payload.given_name ?? '',
+        lastName: payload.family_name ?? '',
+        avatar: payload.picture ?? undefined,
+        provider: 'google',
+      });
+    }
+
+    this.logger.log(`User created: ${user.id}`, 'AuthService.googleSignup');
+
+    const session = await this.sessionService.create({
+      userId: user.id,
+      refreshToken: '',
+      isActive: true,
+      ipAddress,
+      userAgent,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    this.logger.log(
+      `Session created: ${session.id}`,
+      'AuthService.googleSignup',
+    );
+
+    const tokens = await this.generateTokens(user, session.id);
+    this.logger.log(
+      `Tokens generated: ${JSON.stringify(tokens)}`,
+      'AuthService.googleSignup',
+    );
+
+    await this.sessionService.update(
+      { id: session.id },
+      { refreshToken: tokens.refreshToken },
+    );
+
+    this.logger.log(
+      `Session updated: ${session.id}`,
+      'AuthService.googleSignup',
+    );
+
+    return tokens;
   }
 
   /**
@@ -197,14 +381,24 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired session.');
     }
 
-    let user = await this.usersService.getUserCache(session.userId);
+    let user = await this.usersService.getUserCacheById(session.userId);
     if (!user) {
       user = await this.usersService.findUserById(session.userId);
+      this.logger.error(
+        `No user found with id: ${session.userId}`,
+        'AuthService.refreshToken',
+      );
+      throw new UnauthorizedException('Inactive user account');
     }
     if (!user || !user.isActive) {
+      this.logger.error(
+        `Inactive user: ${session.userId}`,
+        'AuthService.refreshToken',
+      );
       throw new UnauthorizedException('Inactive user account');
     }
 
+    this.logger.log(`User found: ${user.email}`);
     await this.sessionService.update(
       { id: session.id },
       {
@@ -214,6 +408,8 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user, session.id);
     await this.usersService.setUserCache(user.id, user, tokens.refreshToken);
+
+    this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
     return tokens;
   }
 
@@ -224,6 +420,7 @@ export class AuthService {
    * @returns The generated tokens
    */
   async generateTokens(user: User, sessionId: string): Promise<AuthTokens> {
+    this.logger.log(`Generating tokens for user: ${user.email}`);
     const payload = {
       id: user.id,
       sub: user.id,
@@ -231,6 +428,8 @@ export class AuthService {
       role: user.role,
       sid: sessionId,
     };
+
+    this.logger.log(`Payload: ${JSON.stringify(payload)}`);
 
     const accessTokenExpiresIn = this.configService.get<string>(
       'JWT_ACCESS_EXPIRES',
@@ -241,10 +440,16 @@ export class AuthService {
       '7d',
     );
 
+    this.logger.log(`Access token expires in: ${accessTokenExpiresIn}`);
+    this.logger.log(`Refresh token expires in: ${refreshTokenExpiresIn}`);
+
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken(payload, accessTokenExpiresIn),
       this.tokenService.signRefreshToken(refreshTokenExpiresIn),
     ]);
+
+    this.logger.log(`Access token: ${accessToken.token}`);
+    this.logger.log(`Refresh token: ${refreshToken.token}`);
 
     const decodedAccess = await this.tokenService.decodeToken(
       accessToken.token,
@@ -253,11 +458,15 @@ export class AuthService {
       refreshToken.token,
     );
 
+    this.logger.log(`Decoded access: ${JSON.stringify(decodedAccess)}`);
+    this.logger.log(`Decoded refresh: ${JSON.stringify(decodedRefresh)}`);
+
     const expiresIn =
       [decodedAccess?.exp, decodedRefresh?.exp]
         .filter(Boolean)
         .sort((a, b) => b! - a!)[0] ?? 0; // Get the highest expiration time
 
+    this.logger.log(`Expires in: ${expiresIn}`);
     return {
       accessToken: accessToken.token,
       refreshToken: refreshToken.token,
@@ -313,5 +522,20 @@ export class AuthService {
     attempts.lastAttempt = new Date();
     this.loginAttempts.set(key, attempts);
     this.logger.log(`Recorded failed attempt for ${key}`);
+  }
+
+  /**
+   * Extract client info from request
+   * @param req - The request
+   * @returns The client info
+   */
+  extractClientInfo(req: Request): { ipAddress?: string; userAgent?: string } {
+    const xForwardedFor = req.headers['x-forwarded-for'];
+    const ipAddress =
+      xForwardedFor?.toString().split(',')[0].trim() ??
+      req.socket.remoteAddress ??
+      undefined;
+    const userAgent = req.headers['user-agent'] ?? undefined;
+    return { ipAddress, userAgent };
   }
 }
