@@ -1,11 +1,10 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { GlobalInterceptor } from './shared/interceptors/global.interceptor';
 import { LoggerService } from './shared/loggers/logger.service';
 import { MemoryMonitor } from './shared/utils/memory-monitor';
 
@@ -80,15 +79,6 @@ async function bootstrap() {
     logger.log(`📚 Swagger documentation available at
 http://localhost:${port}/docs`);
   }
-
-  app.useGlobalInterceptors(app.get(GlobalInterceptor));
-
-  // Versioning
-  app.enableVersioning({
-    type: VersioningType.HEADER,
-    header: 'X-API-VERSION',
-    defaultVersion: '1',
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({

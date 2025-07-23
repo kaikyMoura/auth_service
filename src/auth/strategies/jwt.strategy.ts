@@ -31,7 +31,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @throws {UnauthorizedException} - If the user is not found
    */
   async validate(payload: JwtPayload) {
-    const cachedToken = await this.userClientService.getUserCache(payload.sub);
+    const cachedToken = await this.userClientService.getUserCacheById(
+      payload.sub,
+    );
 
     if (cachedToken) {
       return cachedToken;

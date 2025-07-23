@@ -3,6 +3,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 
+/**
+ * Google authentication service
+ * @class GoogleAuthService
+ * @description Google authentication service for verifying Google ID tokens
+ * @example
+ * const googleAuthService = new GoogleAuthService(configService, logger);
+ * const payload = await googleAuthService.verifyToken(token);
+ */
 @Injectable()
 export class GoogleAuthService {
   private readonly client: OAuth2Client;
