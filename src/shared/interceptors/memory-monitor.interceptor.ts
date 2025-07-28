@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { CustomRequest } from '../interfaces/custom-request';
-import { LoggerService } from '../loggers/logger.service';
+import { CustomRequest } from '../../domain/interfaces/custom-request.interface';
+import { LoggerService } from '../../infra/logger/logger.service';
 import { MemoryMonitor } from '../utils/memory-monitor';
 
 /**

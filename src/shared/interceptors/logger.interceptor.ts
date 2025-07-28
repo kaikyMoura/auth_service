@@ -5,9 +5,9 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
-import { CustomRequest } from '../interfaces/custom-request';
-import { CustomResponse } from '../interfaces/custom-response';
-import { LoggerService } from '../loggers/logger.service';
+import { CustomRequest } from '../../domain/interfaces/custom-request.interface';
+import { CustomResponse } from '../../domain/interfaces/custom-response.interface';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 /**
  * Interceptor to log requests and responses.

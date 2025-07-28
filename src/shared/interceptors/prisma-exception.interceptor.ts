@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from 'prisma/app/generated/prisma/client/runtime/library';
 import { catchError, Observable, throwError } from 'rxjs';
-import { LoggerService } from '../loggers/logger.service';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 /**
  * Interceptor to handle Prisma exceptions.

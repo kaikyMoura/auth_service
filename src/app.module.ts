@@ -6,22 +6,22 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { GoogleModule } from './google/google.module';
-import { HealthModule } from './health/health.module';
-import { SessionModule } from './sessions/session.module';
-import { cacheModuleOptions } from './shared/configs/cache-options.config';
-import { cacheConfig } from './shared/configs/cache.config';
-import { databaseConfig } from './shared/configs/database.config';
-import { jwtConfig } from './shared/configs/jwt.config';
-import { throttlerConfig } from './shared/configs/throttler.config';
-import { throttlerModuleOptions } from './shared/configs/throttler-options.config';
+import { AuthModule } from './auth.module';
+import { GoogleModule } from './infra/google-auth/google.module';
+import { HealthModule } from './modules/health/health.module';
+import { SessionModule } from './modules/sessions/session.module';
+import { cacheModuleOptions } from './shared/config/cache-options.config';
+import { cacheConfig } from './shared/config/cache.config';
+import { databaseConfig } from './shared/config/database.config';
+import { jwtConfig } from './shared/config/jwt.config';
+import { throttlerConfig } from './shared/config/throttler.config';
+import { throttlerModuleOptions } from './shared/config/throttler-options.config';
 import { GlobalInterceptor } from './shared/interceptors/global.interceptor';
-import { LoggerModule } from './shared/loggers/logger.module';
-import { PrismaModule } from './shared/prisma/prisma.module';
+import { LoggerModule } from './infra/logger/logger.module';
+import { PrismaModule } from './infra/prisma/prisma.module';
 import { envSchema } from './shared/schemas/env.schema';
 import { SharedModule } from './shared/shared.module';
-import { UserClientModule } from './users-client/user-client.module';
+import { UserClientModule } from './libs/users-client/user-client.module';
 
 @Module({
   imports: [

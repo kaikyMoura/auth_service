@@ -18,8 +18,9 @@ export const envSchema = Joi.object({
     .required()
     .description('Database connection URL'),
   JWT_SECRET_KEY: Joi.string()
+    .min(32)
     .required()
-    .description('Secret key used to sign JWT tokens'),
+    .description('Secret key used to sign JWT tokens (minimum 32 characters)'),
   JWT_ACCESS_EXPIRES: Joi.string()
     .default('1h')
     .required()
@@ -43,4 +44,19 @@ export const envSchema = Joi.object({
     .default(60)
     .description('Throttler TTL in seconds'),
   THROTTLER_LIMIT: Joi.number().default(10).description('Throttler limit'),
+  ALLOWED_ORIGINS: Joi.string()
+    .default('http://localhost:3000')
+    .description('Comma-separated list of allowed CORS origins'),
+  USERS_SERVICE_URL: Joi.string()
+    .uri()
+    .required()
+    .description('URL of the external user service'),
+  GOOGLE_CLIENT_ID: Joi.string()
+    .allow('')
+    .default('')
+    .description('Google OAuth client ID'),
+  GOOGLE_CREDENTIALS: Joi.string()
+    .allow('')
+    .default('')
+    .description('Google OAuth credentials JSON string'),
 });

@@ -7,9 +7,9 @@ import {
 import { AuditAction, AuditLog } from 'prisma/app/generated/prisma/client';
 import { from, mergeMap, Observable, of } from 'rxjs';
 import { catchError, mapTo, tap } from 'rxjs/operators';
-import { AuditService } from '../audits/audit.service';
-import { CustomRequest } from '../interfaces/custom-request';
-import { LoggerService } from '../loggers/logger.service';
+import { AuditService } from '../../infra/audit/audit.service';
+import { CustomRequest } from '../../domain/interfaces/custom-request.interface';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 /**
  * Interface to parse the request body.

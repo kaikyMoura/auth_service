@@ -1,7 +1,7 @@
-import { SessionModule } from '@/sessions/session.module';
+import { SessionModule } from '@/modules/sessions/session.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuditModule } from './audits/audit.module';
+import { AuditModule } from '../infra/audit/audit.module';
 import { AuditInterceptor } from './interceptors/audit.interceptor';
 import { CacheInterceptor } from './interceptors/cache.interceptor';
 import { GlobalInterceptor } from './interceptors/global.interceptor';
@@ -11,7 +11,7 @@ import { MemoryMonitorInterceptor } from './interceptors/memory-monitor.intercep
 import { MetricsInterceptor } from './interceptors/metrics.interceptor';
 import { PrismaExceptionInterceptor } from './interceptors/prisma-exception.interceptor';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
-import { LoggerModule } from './loggers/logger.module';
+import { LoggerModule } from '../infra/logger/logger.module';
 import { ExpiredSessionTask } from './tasks/expired-session.task';
 import { MemoryMonitorTask } from './tasks/memory-monitor.task';
 import { MemoryMonitor } from './utils/memory-monitor';

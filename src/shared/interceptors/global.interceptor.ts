@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { LoggerService } from '../loggers/logger.service';
+import { LoggerService } from '../../infra/logger/logger.service';
 import { AuditInterceptor } from './audit.interceptor';
 import { CacheInterceptor } from './cache.interceptor';
 import { HttpExceptionInterceptor } from './http-exception.interceptor';

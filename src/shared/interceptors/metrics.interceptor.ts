@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { catchError, Observable, tap } from 'rxjs';
-import { CustomRequest } from '../interfaces/custom-request';
-import { CustomResponse } from '../interfaces/custom-response';
-import { LoggerService } from '../loggers/logger.service';
+import { CustomRequest } from '../../domain/interfaces/custom-request.interface';
+import { CustomResponse } from '../../domain/interfaces/custom-response.interface';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 /**
  * Interface to store request metrics.

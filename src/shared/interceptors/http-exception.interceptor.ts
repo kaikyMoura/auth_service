@@ -1,4 +1,4 @@
-import { LoggerService } from '@/shared/loggers/logger.service';
+import { LoggerService } from '@/infra/logger/logger.service';
 import {
   CallHandler,
   ExecutionContext,

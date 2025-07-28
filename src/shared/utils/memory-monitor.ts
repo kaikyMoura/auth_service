@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../loggers/logger.service';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 @Injectable()
 export class MemoryMonitor {

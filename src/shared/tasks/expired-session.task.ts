@@ -1,12 +1,14 @@
-import { SessionService } from '@/sessions/session.service';
-import { Injectable } from '@nestjs/common';
+import { ISessionService } from '@/modules/sessions/domain/interfaces/session-service.interface';
+import { SESSION_SERVICE } from '@/modules/sessions/domain/interfaces/session.tokens';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { LoggerService } from '../loggers/logger.service';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 @Injectable()
 export class ExpiredSessionTask {
   constructor(
-    private readonly sessionService: SessionService,
+    @Inject(SESSION_SERVICE)
+    private readonly sessionService: ISessionService,
     private readonly logger: LoggerService,
   ) {}
 

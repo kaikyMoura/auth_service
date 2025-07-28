@@ -9,7 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Observable, asapScheduler, from, scheduled } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
-import { LoggerService } from '../loggers/logger.service';
+import { LoggerService } from '../../infra/logger/logger.service';
 
 /**
  * Interceptor to cache responses.
