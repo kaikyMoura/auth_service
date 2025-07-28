@@ -22,6 +22,14 @@
 
 Auth Service is a secure, scalable, and extensible authentication and authorization API, ideal for microservices and modern web/mobile backends. It features JWT-based authentication, refresh token rotation, session tracking, RBAC, and integrates with external user services. The service is built with NestJS, Prisma, and Redis for high performance and reliability.
 
+### 🏗️ **Architecture Highlights**
+
+- **Clean Architecture**: Separation of concerns with domain, application, and infrastructure layers
+- **Dependency Injection**: Token-based DI for better testability and flexibility
+- **Modular Design**: Well-organized modules with clear boundaries
+- **Type Safety**: Full TypeScript implementation with strict validation
+- **Security First**: Comprehensive security measures and best practices
+
 ---
 
 ## 2. Features
@@ -46,27 +54,34 @@ Auth Service is a secure, scalable, and extensible authentication and authorizat
 - Guards for JWT and throttling
 - Global error handling and logging
 - Audit logging for authentication events
+- **Enhanced CORS configuration** with environment-based origins
+- **Request/Response interceptors** for monitoring and logging
 
 ### 📈 Observability & Health
 - Health, readiness, and liveness endpoints for monitoring
-- Swagger/OpenAPI documentation (`/docs`)
+- **Enhanced Swagger documentation** with detailed API descriptions
 - Environment-based configuration and validation
 - Modular, extensible architecture
+- **Memory monitoring** and performance tracking
+- **Structured logging** with Winston
 
 ---
 
 ## 3. Technologies
 
 - **NestJS** (Node.js framework)
-- **TypeScript**
-- **Prisma** (ORM)
-- **PostgreSQL** (database)
+- **TypeScript** (with strict configuration)
+- **Prisma** (ORM with PostgreSQL)
+- **PostgreSQL** (primary database)
 - **Redis** (cache/session store)
-- **Passport.js** (authentication)
+- **Passport.js** (authentication strategies)
 - **JWT** (token management)
-- **Axios** (HTTP client for user service)
-- **Jest** (testing)
-- **ESLint/Prettier** (code quality)
+- **Axios** (HTTP client for external services)
+- **Jest** (testing framework)
+- **ESLint/Prettier** (code quality and formatting)
+- **Winston** (structured logging)
+- **Helmet** (security headers)
+- **Compression** (response compression)
 
 ---
 
@@ -93,8 +108,8 @@ cp .env.example .env
 # Edit .env with your configuration
 
 # 4. Set up database
-pnpm prisma migrate deploy
-pnpm prisma generate
+pnpm db:migrate
+pnpm db:generate
 
 # 5. Start development server
 pnpm start:dev
@@ -107,24 +122,34 @@ pnpm start:dev
 ### Required Environment Variables
 
 ```env
+# Application
 NODE_ENV=development
 PORT=5000
 
+# Database
 DATABASE_URL="postgresql://user:password@localhost:5432/auth_service"
 
-JWT_SECRET_KEY=your_super_secret_jwt_key_here
+# JWT Configuration
+JWT_SECRET_KEY=your_super_secret_jwt_key_here_minimum_32_characters
 JWT_ACCESS_EXPIRES=1h
 JWT_REFRESH_EXPIRES=7d
 
+# Redis Configuration
 REDIS_URL=redis://localhost:6379
 REDIS_TTL=300
 REDIS_MAX_ITEMS=100
 
+# Rate Limiting
 THROTTLER_TTL=60
 THROTTLER_LIMIT=10
 
-ALLOWED_ORIGINS=http://localhost:3000
+# CORS
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# External Services
 USERS_SERVICE_URL=http://localhost:3001
+
+# Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CREDENTIALS=your_google_credentials_json
 ```
@@ -144,7 +169,7 @@ GOOGLE_CREDENTIALS=your_google_credentials_json
 - **ALLOWED_ORIGINS**: Comma-separated list of allowed CORS origins
 - **USERS_SERVICE_URL**: URL of the external user service
 - **GOOGLE_CLIENT_ID**: Google OAuth client ID
-- **GOOGLE_CREDENTIALS**: Google OAuth credentials JSON
+- **GOOGLE_CREDENTIALS**: Google OAuth credentials JSON string
 
 ---
 
@@ -178,30 +203,95 @@ GOOGLE_CREDENTIALS=your_google_credentials_json
 ### Available Scripts
 
 ```bash
+# Development
 pnpm start:dev          # Start development server with hot reload
+pnpm start:dev:gc       # Start with garbage collection monitoring
+pnpm start:debug        # Start with debug mode
 pnpm start:prod         # Start production server
+
+# Testing
 pnpm test               # Run unit tests
-pnpm test:e2e           # Run end-to-end tests
+pnpm test:watch         # Run tests in watch mode
 pnpm test:cov           # Run tests with coverage
-pnpm lint               # Run ESLint
+pnpm test:ci            # Run tests for CI/CD
+pnpm test:e2e           # Run end-to-end tests
+pnpm test:debug         # Run tests with debugger
+
+# Code Quality
+pnpm lint               # Run ESLint with auto-fix
+pnpm lint:check         # Run ESLint without auto-fix
 pnpm format             # Format code with Prettier
-pnpm prisma studio      # Open Prisma Studio
-pnpm prisma migrate dev # Create and apply new migration
-pnpm prisma generate    # Generate Prisma client
+pnpm type-check         # Run TypeScript type checking
+pnpm check-all          # Run all checks (lint, type-check, tests)
+
+# Database
+pnpm db:generate        # Generate Prisma client
+pnpm db:migrate         # Deploy database migrations
+pnpm db:migrate:dev     # Create and apply new migration
+pnpm db:migrate:reset   # Reset database and apply migrations
+pnpm db:studio          # Open Prisma Studio
+pnpm db:seed            # Seed database with initial data
+
+# Build & Clean
+pnpm build              # Build the application
+pnpm clean              # Clean build artifacts
 ```
 
 ### Project Structure
 
 ```
 src/
-├── auth/           # Authentication and authorization logic
-├── sessions/       # Session management
-├── shared/         # Shared modules (logger, interceptors, configs, etc)
-├── users-client/   # Integration with external user service
-├── google/         # Google OAuth integration
-├── health/         # Health check endpoints and monitoring
-└── main.ts         # Application bootstrap
+├── application/           # Application layer (use cases, DTOs, services)
+│   ├── dtos/             # Data Transfer Objects
+│   ├── services/         # Application services
+│   └── use-cases/        # Business logic use cases
+├── controllers/          # HTTP controllers
+├── domain/               # Domain layer (entities, interfaces, enums)
+│   ├── enums/           # Domain enums
+│   └── interfaces/      # Domain interfaces
+├── infra/                # Infrastructure layer
+│   ├── audit/           # Audit logging
+│   ├── decorators/      # Custom decorators
+│   ├── google-auth/     # Google OAuth integration
+│   ├── guards/          # Authentication guards
+│   ├── interceptors/    # Request/response interceptors
+│   ├── logger/          # Logging infrastructure
+│   ├── prisma/          # Database layer
+│   └── strategies/      # Passport strategies
+├── libs/                 # Shared libraries
+│   └── users-client/    # External user service client
+├── modules/              # Feature modules
+│   ├── health/          # Health check module
+│   └── sessions/        # Session management module
+├── shared/               # Shared utilities and configurations
+│   ├── config/          # Configuration files
+│   ├── interceptors/    # Global interceptors
+│   ├── schemas/         # Environment validation schemas
+│   ├── tasks/           # Scheduled tasks
+│   ├── types/           # Shared types
+│   └── utils/           # Utility functions
+├── app.module.ts         # Root application module
+├── auth.module.ts        # Authentication module
+└── main.ts              # Application bootstrap
 ```
+
+### Architecture Patterns
+
+#### **Clean Architecture**
+- **Domain Layer**: Core business logic and entities
+- **Application Layer**: Use cases and application services
+- **Infrastructure Layer**: External dependencies and implementations
+
+#### **Dependency Injection**
+- **Token-based DI**: Using Symbol tokens for better type safety
+- **Interface-based contracts**: Loose coupling between layers
+- **Modular providers**: Clear separation of concerns
+
+#### **Validation & Security**
+- **Class-validator**: Comprehensive input validation
+- **Custom decorators**: Reusable validation logic
+- **Security headers**: Helmet integration
+- **Rate limiting**: Throttler protection
 
 ---
 
@@ -209,15 +299,17 @@ src/
 
 - **Database connection issues:** Check your `DATABASE_URL` and if PostgreSQL is running.
 - **Redis issues:** Ensure Redis is running and `REDIS_URL` is correct.
-- **JWT issues:** Use a strong `JWT_SECRET_KEY` and check expiration settings.
+- **JWT issues:** Use a strong `JWT_SECRET_KEY` (minimum 32 characters) and check expiration settings.
 - **External user service:** Make sure `USERS_SERVICE_URL` is reachable.
 - **Google OAuth issues:** Check your `GOOGLE_CLIENT_ID` and credentials.
+- **Dependency injection errors:** Verify that all tokens are properly exported and imported.
 
 ---
 
 ## 9. Deployment
 
 ```bash
+# Build and start production
 pnpm build
 pnpm start:prod
 ```
