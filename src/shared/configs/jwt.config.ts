@@ -1,5 +1,10 @@
 import { registerAs } from '@nestjs/config';
 
+/**
+ * JWT configuration
+ * @description This is the configuration for the JWT module
+ * @returns JWT configuration
+ */
 export interface JwtConfig {
   secret: string;
   accessExpiresIn: string;
@@ -11,7 +16,7 @@ export interface JwtConfig {
  * @description This is the configuration for the JWT module
  * @returns JWT configuration
  */
-export default registerAs('jwt', (): JwtConfig => {
+export const jwtConfig = registerAs('jwt', (): JwtConfig => {
   if (!process.env.JWT_SECRET_KEY) {
     throw new Error('JWT_SECRET_KEY environment variable is required');
   }

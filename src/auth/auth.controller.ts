@@ -1,5 +1,5 @@
-import { CurrentRefreshToken } from '@/shared/decorators/current-refresh-token.decorator';
-import { Public } from '@/shared/decorators/public.decorator';
+import { CurrentRefreshToken } from '@/auth/decorators/current-refresh-token.decorator';
+import { Public } from '@/auth/decorators/public.decorator';
 import { LoginUserDto } from '@/users-client/dtos/login-user.dto';
 import { RegisterUserDto } from '@/users-client/dtos/register-user.dto';
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
@@ -9,10 +9,11 @@ import { Request } from 'express';
 import { JwtGuard } from './guards/jwt.guard';
 import { AuthService } from './services/auth.service';
 import { AuthResponse } from './types/auth-response';
+import { RolesGuard } from './guards/roles.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
-@UseGuards(JwtGuard, ThrottlerGuard)
+@UseGuards(JwtGuard, ThrottlerGuard, RolesGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

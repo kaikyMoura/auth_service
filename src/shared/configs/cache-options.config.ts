@@ -1,30 +1,28 @@
-import KeyvRedis from '@keyv/redis';
 import { CacheModuleAsyncOptions } from '@nestjs/cache-manager';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheConfig } from './cache.config';
+import { ConfigType } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import KeyvRedis from '@keyv/redis';
+import { cacheConfig } from './cache.config';
 
 /**
- * Cache module options
- * @description This is the configuration for the cache module
+ * Create cache module options
+ * @description This is the function to create the cache module options
  * @returns Cache module options
  */
 export const cacheModuleOptions: CacheModuleAsyncOptions = {
+  isGlobal: true,
   imports: [ConfigModule],
-  isGlobal: process.env.NODE_ENV !== 'test' ? true : false,
-  useFactory: async (configService: ConfigService) => {
-    const cacheConfig = configService.get<CacheConfig>('cache');
+  inject: [cacheConfig.KEY],
+  useFactory: (config: ConfigType<typeof cacheConfig>) => {
+    const useRedis = Boolean(config.url);
+    const store = useRedis
+      ? new KeyvRedis(config.url, { connectionTimeout: 1000 })
+      : undefined;
 
-    return Promise.resolve(
-      cacheConfig?.url
-        ? {
-            store: new KeyvRedis(cacheConfig.url, {
-              connectionTimeout: 1000,
-            }),
-            ttl: cacheConfig.defaultTtl,
-            max: cacheConfig.maxItems,
-          }
-        : { ttl: cacheConfig?.defaultTtl ?? 300, store: undefined },
-    );
+    return {
+      store,
+      ttl: config.defaultTtl,
+      max: config.maxItems,
+    };
   },
-  inject: [ConfigService],
 };

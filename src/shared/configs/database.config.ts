@@ -1,5 +1,10 @@
 import { registerAs } from '@nestjs/config';
 
+/**
+ * Database configuration interface
+ * @description This is the interface for the database configuration
+ * @returns Database configuration interface
+ */
 export interface DatabaseConfig {
   url: string;
   directUrl?: string;
@@ -15,7 +20,7 @@ export interface DatabaseConfig {
  * @description This is the configuration for the database module
  * @returns Database configuration
  */
-export default registerAs('database', (): DatabaseConfig => {
+export const databaseConfig = registerAs('database', (): DatabaseConfig => {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is required');
   }

@@ -1,9 +1,9 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import {
   ThrottlerAsyncOptions,
   ThrottlerModuleOptions,
-  ThrottlerOptions,
 } from '@nestjs/throttler';
+import { throttlerConfig } from './throttler.config';
 
 /**
  * Throttler module options
@@ -12,16 +12,17 @@ import {
  */
 export const throttlerModuleOptions: ThrottlerAsyncOptions = {
   imports: [ConfigModule],
-  useFactory: (configService: ConfigService): ThrottlerModuleOptions => {
-    const throttlerConfig = configService.get<ThrottlerOptions>('throttler');
+  inject: [throttlerConfig.KEY],
+  useFactory: (
+    config: ConfigType<typeof throttlerConfig>,
+  ): ThrottlerModuleOptions => {
     return {
       throttlers: [
         {
-          ttl: throttlerConfig?.ttl ?? 60,
-          limit: throttlerConfig?.limit ?? 10,
+          ttl: config.ttl,
+          limit: config.limit,
         },
       ],
     };
   },
-  inject: [ConfigService],
 };

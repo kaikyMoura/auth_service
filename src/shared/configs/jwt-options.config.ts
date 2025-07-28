@@ -1,21 +1,19 @@
 import { JwtModuleAsyncOptions } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtConfig } from './jwt.config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
+import { jwtConfig } from './jwt.config';
 
 /**
- * JWT options
+ * Create JWT module options
  * @description This is the configuration for the JWT module
- * @returns JWT options
+ * @returns JWT module options
  */
 export const jwtModuleOptions: JwtModuleAsyncOptions = {
   imports: [ConfigModule],
-  global: true,
-  useFactory: (configService: ConfigService) => {
-    const jwtConfig = configService.get<JwtConfig>('jwt');
-    return {
-      secret: jwtConfig?.secret,
-      signOptions: { expiresIn: jwtConfig?.accessExpiresIn },
-    };
-  },
-  inject: [ConfigService],
+  inject: [jwtConfig.KEY],
+  useFactory: (config: ConfigType<typeof jwtConfig>) => ({
+    secret: config.secret,
+    signOptions: {
+      expiresIn: config.accessExpiresIn,
+    },
+  }),
 };

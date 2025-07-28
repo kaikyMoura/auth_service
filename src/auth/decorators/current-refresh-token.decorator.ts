@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { CustomRequest } from '../interfaces/custom-request';
+import { CustomRequest } from '../../shared/interfaces/custom-request';
 
 /**
  * Current refresh token decorator

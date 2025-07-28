@@ -20,7 +20,7 @@
 
 ## 1. About the Project
 
-This project implements a secure authentication and authorization API, ideal for microservices and modern web/mobile backends. It features JWT-based authentication, refresh token rotation, session tracking, RBAC, and integrates with external user services. The service is built with NestJS, Prisma, and Redis for high performance and reliability.
+Auth Service is a secure, scalable, and extensible authentication and authorization API, ideal for microservices and modern web/mobile backends. It features JWT-based authentication, refresh token rotation, session tracking, RBAC, and integrates with external user services. The service is built with NestJS, Prisma, and Redis for high performance and reliability.
 
 ---
 
@@ -34,6 +34,7 @@ This project implements a secure authentication and authorization API, ideal for
 - Rate limiting and brute-force protection (Throttler)
 - Password hashing with bcrypt
 - Caching with Redis for user/session data
+- Google OAuth login support
 
 ### 👥 User Management
 - User registration and login
@@ -46,7 +47,8 @@ This project implements a secure authentication and authorization API, ideal for
 - Global error handling and logging
 - Audit logging for authentication events
 
-### 🧰 Developer Experience
+### 📈 Observability & Health
+- Health, readiness, and liveness endpoints for monitoring
 - Swagger/OpenAPI documentation (`/docs`)
 - Environment-based configuration and validation
 - Modular, extensible architecture
@@ -80,8 +82,8 @@ This project implements a secure authentication and authorization API, ideal for
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/auth-service.git
-cd auth-service
+git clone https://github.com/kaikyMoura/auth_service.git
+cd auth_service
 
 # 2. Install dependencies
 pnpm install
@@ -123,7 +125,26 @@ THROTTLER_LIMIT=10
 
 ALLOWED_ORIGINS=http://localhost:3000
 USERS_SERVICE_URL=http://localhost:3001
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CREDENTIALS=your_google_credentials_json
 ```
+
+#### Environment Variables Explained
+- **NODE_ENV**: Application environment (`development`, `production`, `test`)
+- **PORT**: Port where the server will listen
+- **DATABASE_URL**: PostgreSQL connection string
+- **JWT_SECRET_KEY**: Secret key for signing JWT tokens (use a strong, unique value)
+- **JWT_ACCESS_EXPIRES**: Access token expiration (e.g., `1h`)
+- **JWT_REFRESH_EXPIRES**: Refresh token expiration (e.g., `7d`)
+- **REDIS_URL**: Redis connection string
+- **REDIS_TTL**: Default cache TTL in seconds
+- **REDIS_MAX_ITEMS**: Max items in Redis cache
+- **THROTTLER_TTL**: Rate limiter window in seconds
+- **THROTTLER_LIMIT**: Max requests per window
+- **ALLOWED_ORIGINS**: Comma-separated list of allowed CORS origins
+- **USERS_SERVICE_URL**: URL of the external user service
+- **GOOGLE_CLIENT_ID**: Google OAuth client ID
+- **GOOGLE_CREDENTIALS**: Google OAuth credentials JSON
 
 ---
 
@@ -138,6 +159,15 @@ USERS_SERVICE_URL=http://localhost:3001
 - `POST /auth/login` — User login
 - `POST /auth/logout` — User logout (requires refresh token)
 - `POST /auth/refresh-token` — Refresh JWT token
+- `POST /auth/google/login` — Google OAuth login
+- `POST /auth/google/signup` — Google OAuth signup
+- `POST /auth/google/callback` — Google OAuth callback
+
+#### Health & Monitoring
+- `GET /health` — General health check
+- `GET /health/simple` — Simple health check
+- `GET /health/ready` — Readiness probe
+- `GET /health/live` — Liveness probe
 
 #### (User management is handled by an external service)
 
@@ -168,6 +198,8 @@ src/
 ├── sessions/       # Session management
 ├── shared/         # Shared modules (logger, interceptors, configs, etc)
 ├── users-client/   # Integration with external user service
+├── google/         # Google OAuth integration
+├── health/         # Health check endpoints and monitoring
 └── main.ts         # Application bootstrap
 ```
 
@@ -179,6 +211,7 @@ src/
 - **Redis issues:** Ensure Redis is running and `REDIS_URL` is correct.
 - **JWT issues:** Use a strong `JWT_SECRET_KEY` and check expiration settings.
 - **External user service:** Make sure `USERS_SERVICE_URL` is reachable.
+- **Google OAuth issues:** Check your `GOOGLE_CLIENT_ID` and credentials.
 
 ---
 
@@ -196,6 +229,8 @@ docker build -t auth-service .
 docker run -p 5000:5000 \
   -e DATABASE_URL="your_production_db_url" \
   -e JWT_SECRET_KEY="your_production_jwt_secret" \
+  -e GOOGLE_CLIENT_ID="your_google_client_id" \
+  -e GOOGLE_CREDENTIALS="your_google_credentials_json" \
   auth-service
 ```
 
